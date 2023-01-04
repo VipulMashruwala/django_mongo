@@ -6,6 +6,7 @@ from rest_framework.response import Response
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from rest_framework.exceptions import ValidationError
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UserListCBV(APIView):
@@ -18,42 +19,57 @@ class UserListCBV(APIView):
                 return Response({'msg': 'user not exists'})
 
             serializer = UserSerializer(user)
-            return Response(serializer.data, content_type = 'application/json')
+            return Response(serializer.data, content_type = 'applic/ation/json')
         
         users = Users.objects.all()
         serializer = UserSerializer(users,many = True)
-        print(serializer.data)
         return Response(serializer.data, content_type = 'application/json')
        
     def post(self, request):
         serializer = UserSerializer(data = request.data)
+        print(request.data)
         if serializer.is_valid():
-            serializer.save()
+            req_data = request.data
+            user = Users(name = req_data['name'],
+                    marks = req_data['marks'],
+                    email = req_data['email'],
+                    age = req_data['age'],
+                    subject = req_data['subject'])
+            user.save()    
             return Response({'msg' : 'user created successfully'})
-        return Response(serializer.errors)
+        else:
+            return Response(serializer.errors)
 
     def put(self, request):
-        data = json.loads(request.body)
-        id = data.get('id')
+        id = request.data.get('id')
+
         try:
             user = Users.objects(id = id)
         except Users.DoesNotExist:
             return Response({'msg': 'user not exists'})
 
-        name = data.get('name',None)
+        name =  request.data.get('name',None)
         if name is not None:
             user.update_one(set__name = name)
 
-        marks = data.get('marks')
+        marks =  request.data.get('marks')
         if marks is not None:
             user.update_one(set__marks = marks)
+
+        email = request.data.get('email')
+        if email is not None:
+            user.update_one(set__email = email)
+
+        age = request.data.get('age')
+        if age is not None:
+            user.update_one(set__age = age)
         
-        subject = data.get('subject')
+        subject =  request.data.get('subject')
         if subject is not None:
             user.update_one(add_to_set__subject = subject)
 
         return Response({'msg' : 'user updated successfully'})
-
+    
     def delete(self,request):
         data = json.loads(request.body)
         id = data.get('id')
