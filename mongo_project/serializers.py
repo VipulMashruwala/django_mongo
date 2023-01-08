@@ -1,4 +1,4 @@
-from .models import Users, Subject
+from .models import Users, Subject, CreateUser
 from rest_framework_mongoengine.serializers import DocumentSerializer
 # from rest_framework_mongoengine import serializers
 from rest_framework import serializers
@@ -7,16 +7,7 @@ from mongoengine import *
 class SubjectSerializer(DocumentSerializer):  
     class Meta:
         model = Subject
-        fields = ['id','sub_name','sub_duration','created_on']
-
-    #     extra_kwargs = {
-    #     'sub_name' : {
-    #         'required' : True
-    #     },
-    #     'sub_duration' : {
-    #         'required' : True
-    #     }
-    # }
+        fields = ['sub_name','sub_duration','created_on']
 
 class UserSerializer(DocumentSerializer):
     subject = SubjectSerializer(required = False,many = True,
@@ -35,15 +26,12 @@ class UserSerializer(DocumentSerializer):
 
     class Meta:
         model = Users
-        fields = ['id','name','marks','email','age','subject','created_on']
-        # extra_kwargs = {
-        #     'name' : {
-        #         'required' : True
-        #     },
-        #     'marks' : {
-        #         'required' : True
-        #     },
-        #     'subject' : {
-        #         'required' : False
-        #     }
-        # }
+        fields = ['name','marks','email','age','subject','created_on']
+
+class CreateUserSerializer(DocumentSerializer):
+    user_data = UserSerializer(required = False)
+    class Meta:
+        model = CreateUser
+        fields = ['id','username','password','is_admin','is_login','created_on','user_data']
+
+    
